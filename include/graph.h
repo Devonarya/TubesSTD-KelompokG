@@ -22,6 +22,7 @@ struct vertex{
 };
 
 struct edge{
+    string namaJalan;
     string destGedung;
     int weight;
     adrEdge nextEdge;
@@ -31,15 +32,17 @@ struct graph{
     adrVertex firstVertex;
 };
 
-
+void menu(graph &G);
 void initGraph(graph &G);
 void buildGraph(graph &G);
 void createVertex(string namaGedung, adrVertex &V);
-void createEdge(string destGedung, int weight);
+void createEdge(string namaJalan, string destGedung, int weight);
 void addVertex(graph &G, string namaGedung);
-void addEdge(graph &G,string namaGedung,string destGedung, int weight);
+void addEdge(graph &G, string namaJalan, string namaGedung,string destGedung, int weight);
 void buildGraph(graph &G);
 void showGraph(graph G);
+void showEdge(graph G);
+void showVertex(graph G);
 adrVertex searchVertex(graph &G, string namaGedung);
 
 #endif // GRAPH_H_INCLUDED

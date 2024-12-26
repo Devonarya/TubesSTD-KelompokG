@@ -1,0 +1,12 @@
+# depslib dependency file v1.0
+1735232646 source:c:\users\asus\desktop\tugas kuliah\semester 3\struktur data\tubes_strukturdata_kelompokg\src\graph.cpp
+	"graph.h"
+	<iostream>
+	<set>
+
+1735233356 c:\users\asus\desktop\tugas kuliah\semester 3\struktur data\tubes_strukturdata_kelompokg\include\graph.h
+	<iostream>
+
+1735226213 source:c:\users\asus\desktop\tugas kuliah\semester 3\struktur data\tubes_strukturdata_kelompokg\main.cpp
+	"graph.h"
+
