@@ -54,6 +54,20 @@ void menu(graph &G) {
                 cin >> jarak;
                 addEdge(G, namaJalan, namaGedung, tujuanGedung, jarak);
                 break;
+                case 7:
+                    cout << "Masukkan nama jalan: ";
+                    cin >> namaJalan;
+                    cout << "Masukkan nama gedung asal: ";
+                    cin >> namaGedung;
+                    cout << "Masukkan nama gedung tujuan: ";
+                    cin >> tujuanGedung;
+                    removeJalan(G, namaJalan, namaGedung, tujuanGedung, true);
+                break;
+                case 8:
+                    cout << "Masukkan nama gedung yang ingin dihapus: ";
+                    cin >> namaGedung;
+                    removeGedung(G, namaGedung);
+                break;
             case 9:
                 cout << "Keluar dari menu." << endl;
                 break;
@@ -174,6 +188,109 @@ void addEdge(graph &G, string namaJalan, string namaGedung, string destGedung, i
     }
 }
 
+void removeGedung(graph &G, string idVertex) {
+    adrVertex prevVertex = nullptr;
+    adrVertex currentVertex = G.firstVertex;
+
+    while (currentVertex != nullptr && currentVertex->namaGedung != idVertex) {
+        prevVertex = currentVertex;
+        currentVertex = currentVertex->nextVertex;
+    }
+
+    if (currentVertex == nullptr) {
+        cout << "Gedung " << idVertex << " tidak ditemukan." << endl;
+        return;
+    }
+
+    // Hapus semua edge yang terhubung ke vertex ini
+    adrVertex temp = G.firstVertex;
+    while (temp != nullptr) {
+        adrEdge edge = temp->firstEdge;
+        while (edge != nullptr) {
+            removeJalan(G, edge->namaJalan, temp->namaGedung, idVertex, false);
+            edge = edge->nextEdge;
+        }
+        temp = temp->nextVertex;
+    }
+
+    // Hapus vertex dari graf
+    if (prevVertex == nullptr) {
+        G.firstVertex = currentVertex->nextVertex;
+    } else {
+        prevVertex->nextVertex = currentVertex->nextVertex;
+    }
+
+    // Hapus semua edge yang berasal dari vertex ini
+    while (currentVertex->firstEdge != nullptr) {
+        adrEdge tempEdge = currentVertex->firstEdge;
+        currentVertex->firstEdge = tempEdge->nextEdge;
+        delete tempEdge;
+    }
+
+    delete currentVertex;
+    cout << "Gedung " << idVertex << " berhasil dihapus." << endl;
+}
+
+
+void removeJalan(graph &G, string namaJalan, string namaGedung, string destGedung, bool stringOutput = true) {
+    // Cari vertex untuk gedung asal
+    adrVertex startVertex = searchVertex(G, namaGedung);
+    if (startVertex == nullptr) {
+        cout << "Gedung " << namaGedung << " tidak ditemukan." << endl;
+        return;
+    }
+
+    // Cari vertex untuk gedung tujuan
+    adrVertex endVertex = searchVertex(G, destGedung);
+    if (endVertex == nullptr) {
+        cout << "Gedung " << destGedung << " tidak ditemukan." << endl;
+        return;
+    }
+
+    // Hapus jalan dari gedung asal ke gedung tujuan berdasarkan nama jalan
+    adrEdge prevEdge = nullptr;
+    adrEdge currentEdge = startVertex->firstEdge;
+
+    while (currentEdge != nullptr && (currentEdge->destGedung != destGedung || currentEdge->namaJalan != namaJalan)) {
+        prevEdge = currentEdge;
+        currentEdge = currentEdge->nextEdge;
+    }
+
+    if (currentEdge != nullptr) {
+        if (prevEdge == nullptr) {
+            startVertex->firstEdge = currentEdge->nextEdge;
+        } else {
+            prevEdge->nextEdge = currentEdge->nextEdge;
+        }
+
+        delete currentEdge;
+        if (stringOutput) cout << "Jalan " << namaJalan << " dari " << namaGedung << " ke " << destGedung << " berhasil dihapus." << endl;
+    } else {
+        if (stringOutput) cout << "Jalan " << namaJalan << " dari " << namaGedung << " ke " << destGedung << " tidak ditemukan." << endl;
+    }
+
+    // Hapus jalan dari gedung tujuan ke gedung asal berdasarkan nama jalan (jika ada)
+    prevEdge = nullptr;
+    currentEdge = endVertex->firstEdge;
+
+    while (currentEdge != nullptr && (currentEdge->destGedung != namaGedung || currentEdge->namaJalan != namaJalan)) {
+        prevEdge = currentEdge;
+        currentEdge = currentEdge->nextEdge;
+    }
+
+    if (currentEdge != nullptr) {
+        if (prevEdge == nullptr) {
+            endVertex->firstEdge = currentEdge->nextEdge;
+        } else {
+            prevEdge->nextEdge = currentEdge->nextEdge;
+        }
+
+        delete currentEdge;
+        if (stringOutput) cout << "Jalan " << namaJalan << " dari " << destGedung << " ke " << namaGedung << " berhasil dihapus." << endl;
+    } else {
+        if (stringOutput) cout << "Jalan " << namaJalan << " dari " << destGedung << " ke " << namaGedung << " tidak ditemukan." << endl;
+    }
+}
 
 
 void showGraph(graph G) {

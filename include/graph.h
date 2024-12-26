@@ -39,6 +39,8 @@ void createVertex(string namaGedung, adrVertex &V);
 void createEdge(string namaJalan, string destGedung, int weight);
 void addVertex(graph &G, string namaGedung);
 void addEdge(graph &G, string namaJalan, string namaGedung,string destGedung, int weight);
+void removeGedung(graph &G, string idVertex);
+void removeJalan(graph &G, string namaJalan, string namaGedung, string destGedung, bool stringOutput);
 void buildGraph(graph &G);
 void showGraph(graph G);
 void showEdge(graph G);
