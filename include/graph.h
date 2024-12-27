@@ -48,5 +48,6 @@ void showEdge(graph G);
 void showVertex(graph G);
 adrVertex searchVertex(graph &G, string namaGedung);
 void jalurAntiHujan(graph G, string namaGedung, string tujuanGedung);
+int shortPathSearching(graph &G, string namaGedung, string tujuanGedung);
 
 #endif // GRAPH_H_INCLUDED

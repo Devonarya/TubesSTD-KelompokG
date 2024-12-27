@@ -58,6 +58,12 @@ void menu(graph &G) {
                 cin >> antiHujan;
                 addEdge(G, namaJalan, namaGedung, tujuanGedung, jarak, antiHujan);
             break;
+            case 6:
+                cout << "Masukan Gedung awal: ";
+                cin >> namaGedung;
+                cout << "Masukan Tujuan Gedung: ";
+                cin >> tujuanGedung;
+                shortPathSearching(G, namaGedung, tujuanGedung);
             case 7:
                 cout << "Masukkan gedung awal: ";
                 cin >> namaGedung;
@@ -90,7 +96,7 @@ void menu(graph &G) {
 }
 
 void initGraph(graph &G) {
-    G.firstVertex = nullptr;
+    firstVertex(G) = nullptr;
 }
 
 void buildGraph(graph &G) {
@@ -109,31 +115,31 @@ void buildGraph(graph &G) {
 void createVertex(string namaGedung, adrVertex &V) {
     V = new vertex;
     V->namaGedung = namaGedung;
-    V->nextVertex = nullptr;
-    V->firstEdge = nullptr;
+    nextVertex(V) = nullptr;
+    firstEdge(V) = nullptr;
 }
 
 void createEdge(string namaJalan,string destGedung, int weight, bool kanopi, adrEdge &E) {
     E = new edge;
     E->namaJalan = namaJalan;
     E->destGedung = destGedung;
-    E->weight = weight;
+    weight(E) = weight;
     E->kanopi = kanopi;
-    E->nextEdge = nullptr;
+    nextEdge(E) = nullptr;
 }
 
 void addVertex(graph &G, string namaGedung) {
     adrVertex V;
     createVertex(namaGedung, V);
 
-    if (G.firstVertex == nullptr) {
-        G.firstVertex = V;
+    if (firstVertex(G) == nullptr) {
+        firstVertex(G) = V;
     } else {
-        adrVertex temp = G.firstVertex;
-        while (temp->nextVertex != nullptr) {
-            temp = temp->nextVertex;
+        adrVertex temp = firstVertex(G);
+        while (nextVertex(temp) != nullptr) {
+            temp = nextVertex(temp);
         }
-        temp->nextVertex = V;
+        nextVertex(temp) = V;
     }
     cout << "Gedung baru telah ditambahkan." << endl;
 }
@@ -153,36 +159,36 @@ void addEdge(graph &G, string namaJalan, string namaGedung, string destGedung, i
         return;
     }
 
-    adrEdge temp = V->firstEdge;
+    adrEdge temp = firstEdge(V);
     while (temp != nullptr) {
         if (temp->namaJalan == namaJalan && temp->destGedung == destGedung) {
             cout << "Nama jalan sudah ada, silahkan masukkan nama jalan lain." << endl;
             return;
         }
-        temp = temp->nextEdge;
+        temp = nextEdge(temp);
     }
 
     adrEdge E;
     createEdge(namaJalan, destGedung, weight, kanopi, E);
-    if (V->firstEdge == nullptr) {
-        V->firstEdge = E;
+    if (firstEdge(V) == nullptr) {
+        firstEdge(V) = E;
     } else {
-        temp = V->firstEdge;
-        while (temp->nextEdge != nullptr) {
-            temp = temp->nextEdge;
+        temp = firstEdge(V);
+        while (nextEdge(temp) != nullptr) {
+            temp = nextEdge(temp);
         }
-        temp->nextEdge = E;
+        nextEdge(temp) = E;
     }
 
     createEdge(namaJalan, namaGedung, weight, kanopi, E);
-    if (D->firstEdge == nullptr) {
-        D->firstEdge = E;
+    if (firstEdge(D) == nullptr) {
+        firstEdge(D) = E;
     } else {
-        temp = D->firstEdge;
-        while (temp->nextEdge != nullptr) {
-            temp = temp->nextEdge;
+        temp = firstEdge(D);
+        while (nextEdge(temp) != nullptr) {
+            temp = nextEdge(temp);
         }
-        temp->nextEdge = E;
+        nextEdge(temp) = E;
     }
 
     cout << "Jalan baru bernama " << namaJalan << " ditambahkan dari " << namaGedung
@@ -193,11 +199,11 @@ void addEdge(graph &G, string namaJalan, string namaGedung, string destGedung, i
 
 void removeGedung(graph &G, string idVertex) {
     adrVertex prevVertex = nullptr;
-    adrVertex currentVertex = G.firstVertex;
+    adrVertex currentVertex = firstVertex(G);
 
     while (currentVertex != nullptr && currentVertex->namaGedung != idVertex) {
         prevVertex = currentVertex;
-        currentVertex = currentVertex->nextVertex;
+        currentVertex = nextVertex(currentVertex);
     }
 
     if (currentVertex == nullptr) {
@@ -208,25 +214,25 @@ void removeGedung(graph &G, string idVertex) {
     // Hapus semua edge yang terhubung ke vertex ini
     adrVertex temp = G.firstVertex;
     while (temp != nullptr) {
-        adrEdge edge = temp->firstEdge;
+        adrEdge edge = firstEdge(temp);
         while (edge != nullptr) {
             removeJalan(G, edge->namaJalan, temp->namaGedung, idVertex, false);
-            edge = edge->nextEdge;
+            edge = nextEdge(edge);
         }
         temp = temp->nextVertex;
     }
 
     // Hapus vertex dari graf
     if (prevVertex == nullptr) {
-        G.firstVertex = currentVertex->nextVertex;
+        firstVertex(G) = nextVertex(currentVertex);
     } else {
-        prevVertex->nextVertex = currentVertex->nextVertex;
+        nextVertex(prevVertex) = nextVertex(currentVertex);
     }
 
     // Hapus semua edge yang berasal dari vertex ini
-    while (currentVertex->firstEdge != nullptr) {
-        adrEdge tempEdge = currentVertex->firstEdge;
-        currentVertex->firstEdge = tempEdge->nextEdge;
+    while (firstEdge(currentVertex) != nullptr) {
+        adrEdge tempEdge = firstEdge(currentVertex);
+        firstEdge(currentVertex) = nextEdge(tempEdge);
         delete tempEdge;
     }
 
@@ -252,18 +258,18 @@ void removeJalan(graph &G, string namaJalan, string namaGedung, string destGedun
 
     // Hapus jalan dari gedung asal ke gedung tujuan berdasarkan nama jalan
     adrEdge prevEdge = nullptr;
-    adrEdge currentEdge = startVertex->firstEdge;
+    adrEdge currentEdge = firstEdge(startVertex);
 
     while (currentEdge != nullptr && (currentEdge->destGedung != destGedung || currentEdge->namaJalan != namaJalan)) {
         prevEdge = currentEdge;
-        currentEdge = currentEdge->nextEdge;
+        currentEdge = nextEdge(currentEdge);
     }
 
     if (currentEdge != nullptr) {
         if (prevEdge == nullptr) {
-            startVertex->firstEdge = currentEdge->nextEdge;
+            firstEdge(startVertex) = nextEdge(currentEdge);
         } else {
-            prevEdge->nextEdge = currentEdge->nextEdge;
+            nextEdge(prevEdge) = nextEdge(currentEdge);
         }
 
         delete currentEdge;
@@ -274,18 +280,18 @@ void removeJalan(graph &G, string namaJalan, string namaGedung, string destGedun
 
     // Hapus jalan dari gedung tujuan ke gedung asal berdasarkan nama jalan (jika ada)
     prevEdge = nullptr;
-    currentEdge = endVertex->firstEdge;
+    currentEdge = firstEdge(endVertex);
 
     while (currentEdge != nullptr && (currentEdge->destGedung != namaGedung || currentEdge->namaJalan != namaJalan)) {
         prevEdge = currentEdge;
-        currentEdge = currentEdge->nextEdge;
+        currentEdge = nextEdge(currentEdge);
     }
 
     if (currentEdge != nullptr) {
         if (prevEdge == nullptr) {
-            endVertex->firstEdge = currentEdge->nextEdge;
+            firstEdge(endVertex) = nextEdge(currentEdge);
         } else {
-            prevEdge->nextEdge = currentEdge->nextEdge;
+            nextEdge(prevEdge) = nextEdge(currentEdge);
         }
 
         delete currentEdge;
@@ -297,33 +303,33 @@ void removeJalan(graph &G, string namaJalan, string namaGedung, string destGedun
 
 
 void showGraph(graph G) {
-    adrVertex v = G.firstVertex;
+    adrVertex v = firstVertex(G);
     while (v != nullptr) {
         cout << "Gedung: " << v->namaGedung << endl;
-        adrEdge e = v->firstEdge;
+        adrEdge e = firstEdge(v);
         if (e == nullptr) {
             cout << "  ** tidak ada jalan yang menghubungkan antar gedung ini **" << endl;
         }
         while (e != nullptr) {
             cout << "  - Jalan " << e->namaJalan << " menuju " << e->destGedung << " dengan jarak " << e->weight << " meter"<< endl;
-            e = e->nextEdge;
+            e = nextEdge(e);
         }
-        v = v->nextVertex;
+        v = nextVertex(v);
     }
 }
 void showEdge(graph G) {
-    adrVertex temp = G.firstVertex;
+    adrVertex temp = firstVertex(G);
     cout << "Daftar Jalan:\n";
     set<string> jalanSet;  // Set untuk menyimpan nama jalan agar tidak ada yang duplikat
 
     while (temp != nullptr) {
-        adrEdge edge = temp->firstEdge;
+        adrEdge edge = firstEdge(temp);
         while (edge != nullptr) {
             // Tambahkan nama jalan ke set, sehingga hanya jalan yang unik yang ditampilkan
             jalanSet.insert(edge->namaJalan);
-            edge = edge->nextEdge;
+            edge = nextEdge(edge);
         }
-        temp = temp->nextVertex;
+        temp = nextVertex(temp);
     }
 
     // Tampilkan nama jalan yang unik
@@ -334,21 +340,21 @@ void showEdge(graph G) {
 
 
 void showVertex(graph G) {
-    adrVertex temp = G.firstVertex;
+    adrVertex temp = firstVertex(G);
     cout << "Daftar Gedung:\n";
     while (temp != nullptr) {
         cout << "- " << temp->namaGedung << endl;
-        temp = temp->nextVertex;
+        temp = nextVertex(temp);
     }
 }
 
 adrVertex searchVertex(graph &G, string namaGedung) {
-    adrVertex temp = G.firstVertex;
+    adrVertex temp = firstVertex(G);
     while (temp != nullptr) {
         if (temp->namaGedung == namaGedung) {
             return temp;
         }
-        temp = temp->nextVertex;
+        temp = nextVertex(temp);
     }
     return nullptr;
 }
@@ -442,5 +448,73 @@ void jalurAntiHujan(graph G, string namaGedung, string tujuanGedung) {
              << " ke " << tujuanGedung << " adalah:" << endl;
         cout << path[idxAkhir] << endl;
         cout << "Dengan total jarak: " << jarak[idxAkhir] << endl;
+    }
+}
+
+int shortPathSearching(graph &G, string namaGedung, string tujuanGedung) {
+    const int MAX_VERTEX = 100;
+    int jarak[MAX_VERTEX];
+    bool visited[MAX_VERTEX];
+    adrVertex vertexArray[MAX_VERTEX];
+    int idxAwal = -1, idxAkhir = -1;
+
+    int jumlahVertex = 0;
+    adrVertex current = firstVertex(G);
+    while (current != NULL) {
+        vertexArray[jumlahVertex] = current;
+        jarak[jumlahVertex] = INT_MAX;
+        visited[jumlahVertex] = false;
+        if (current->namaGedung == namaGedung) idxAwal = jumlahVertex;
+        if (current->namaGedung == tujuanGedung) idxAkhir = jumlahVertex;
+        jumlahVertex++;
+        current = current->nextVertex;
+    }
+
+    if (idxAwal == -1 || idxAkhir == -1) {
+        cout << "Error: Vertex awal atau tujuan tidak ditemukan." << endl;
+        return -1;
+    }
+
+    jarak[idxAwal] = 0;
+    for (int i = 0; i < jumlahVertex; ++i) {
+        int minJarak = INT_MAX;
+        int idxMin = -1;
+
+        for (int j = 0; j < jumlahVertex; ++j) {
+            if (!visited[j] && jarak[j] < minJarak) {
+                minJarak = jarak[j];
+                idxMin = j;
+            }
+        }
+
+        if (idxMin == -1) break;
+        visited[idxMin] = true;
+
+        adrEdge edge = firstEdge(vertexArray[idxMin]);
+        while (edge != NULL) {
+            int idxTetangga = -1;
+            for (int k = 0; k < jumlahVertex; ++k) {
+                if (vertexArray[k]->namaGedung == edge->destGedung) {
+                    idxTetangga = k;
+                    break;
+                }
+            }
+
+            if (idxTetangga != -1 && !visited[idxTetangga]) {
+                int jarakBaru = jarak[idxMin] + edge->weight;
+                if (jarakBaru < jarak[idxTetangga]) {
+                    jarak[idxTetangga] = jarakBaru;
+                }
+            }
+            edge = nextEdge(edge);
+        }
+    }
+
+    if (jarak[idxAkhir] == INT_MAX) {
+        cout << "Tidak ada jalur dari " << namaGedung << " ke " << tujuanGedung << "." << endl;
+        return -1;
+    } else {
+        cout << "Jarak terpendek dari " << namaGedung << " ke " << tujuanGedung << " adalah " << jarak[idxAkhir] << "." << endl;
+        return jarak[idxAkhir];
     }
 }
