@@ -13,6 +13,7 @@ void menu(graph &G) {
     int pilihan;
     string namaGedung, tujuanGedung, namaJalan;
     int jarak;
+    bool antiHujan;
 
     do {
         cout << "\nMENU:\n";
@@ -22,9 +23,10 @@ void menu(graph &G) {
         cout << "4. Tambah gedung\n";
         cout << "5. Tambah jalan antar gedung\n";
         cout << "6. Cari jarak terpendek antar gedung\n";
-        cout << "7. Hapus Jalan antar gedung\n";
-        cout << "8. Hapus gedung\n";
-        cout << "9. Quit menu\n";
+        cout << "7. Jalur anti hujan\n";
+        cout << "8. Hapus Jalan antar gedung\n";
+        cout << "9. Hapus gedung\n";
+        cout << "0. Quit menu\n";
         cout << "Masukkan pilihan: ";
         cin >> pilihan;
 
@@ -52,31 +54,39 @@ void menu(graph &G) {
                 cin >> tujuanGedung;
                 cout << "Masukkan jarak antar gedung: ";
                 cin >> jarak;
-                addEdge(G, namaJalan, namaGedung, tujuanGedung, jarak);
-                break;
-                case 7:
-                    cout << "Masukkan nama jalan: ";
-                    cin >> namaJalan;
-                    cout << "Masukkan nama gedung asal: ";
-                    cin >> namaGedung;
-                    cout << "Masukkan nama gedung tujuan: ";
-                    cin >> tujuanGedung;
-                    removeJalan(G, namaJalan, namaGedung, tujuanGedung, true);
-                break;
-                case 8:
-                    cout << "Masukkan nama gedung yang ingin dihapus: ";
-                    cin >> namaGedung;
-                    removeGedung(G, namaGedung);
-                break;
+                cout << "Apakah terdapat kanopi (true/false)? ";
+                cin >> antiHujan;
+                addEdge(G, namaJalan, namaGedung, tujuanGedung, jarak, antiHujan);
+            break;
+            case 7:
+                cout << "Masukkan gedung awal: ";
+                cin >> namaGedung;
+                cout << "Masukkan gedung tujuan: ";
+                cin >> tujuanGedung;
+                jalurAntiHujan(G, namaGedung, tujuanGedung);
+            case 8:
+                cout << "Masukkan nama jalan: ";
+                cin >> namaJalan;
+                cout << "Masukkan nama gedung asal: ";
+                cin >> namaGedung;
+                cout << "Masukkan nama gedung tujuan: ";
+                cin >> tujuanGedung;
+                removeJalan(G, namaJalan, namaGedung, tujuanGedung, true);
+            break;
             case 9:
+                cout << "Masukkan nama gedung yang ingin dihapus: ";
+                cin >> namaGedung;
+                removeGedung(G, namaGedung);
+            break;
+            case 0:
                 cout << "Keluar dari menu." << endl;
-                break;
+            break;
             default:
                 cout << "Pilihan tidak valid." << endl;
-                break;
+            break;
         }
 
-    } while (pilihan != 9);
+    } while (pilihan != 0);
 }
 
 void initGraph(graph &G) {
@@ -103,11 +113,12 @@ void createVertex(string namaGedung, adrVertex &V) {
     V->firstEdge = nullptr;
 }
 
-void createEdge(string namaJalan,string destGedung, int weight, adrEdge &E) {
+void createEdge(string namaJalan,string destGedung, int weight, bool kanopi, adrEdge &E) {
     E = new edge;
     E->namaJalan = namaJalan;
     E->destGedung = destGedung;
     E->weight = weight;
+    E->kanopi = kanopi;
     E->nextEdge = nullptr;
 }
 
@@ -127,7 +138,7 @@ void addVertex(graph &G, string namaGedung) {
     cout << "Gedung baru telah ditambahkan." << endl;
 }
 
-void addEdge(graph &G, string namaJalan, string namaGedung, string destGedung, int weight) {
+void addEdge(graph &G, string namaJalan, string namaGedung, string destGedung, int weight, bool kanopi) {
     if (weight <= 0) {
         cout << "Jarak harus bernilai positif." << endl;
         return;
@@ -143,26 +154,16 @@ void addEdge(graph &G, string namaJalan, string namaGedung, string destGedung, i
     }
 
     adrEdge temp = V->firstEdge;
-    bool roadExists = false;
-
-    // Cek apakah jalan sudah ada pada gedung asal
     while (temp != nullptr) {
         if (temp->namaJalan == namaJalan && temp->destGedung == destGedung) {
-            roadExists = true;
-            break;
+            cout << "Nama jalan sudah ada, silahkan masukkan nama jalan lain." << endl;
+            return;
         }
         temp = temp->nextEdge;
     }
 
-    if (roadExists) {
-        cout << "Nama jalan sudah ada, silahkan masukkan nama jalan lain." << endl;
-        return;
-    }
-
-    // Jika jalan tidak ditemukan, buat jalan baru
     adrEdge E;
-    createEdge(namaJalan, destGedung, weight, E);
-
+    createEdge(namaJalan, destGedung, weight, kanopi, E);
     if (V->firstEdge == nullptr) {
         V->firstEdge = E;
     } else {
@@ -173,10 +174,7 @@ void addEdge(graph &G, string namaJalan, string namaGedung, string destGedung, i
         temp->nextEdge = E;
     }
 
-    cout << "Jalan baru bernama " << namaJalan << " ditambahkan dengan rute dari " << namaGedung << " ke " << destGedung << " dengan jarak " << weight << " meter." << endl;
-
-    // Tambahkan juga edge pada gedung tujuan agar rute dua arah
-    createEdge(namaJalan, namaGedung, weight, E);  // Membuat edge yang mengarah kembali
+    createEdge(namaJalan, namaGedung, weight, kanopi, E);
     if (D->firstEdge == nullptr) {
         D->firstEdge = E;
     } else {
@@ -186,7 +184,12 @@ void addEdge(graph &G, string namaJalan, string namaGedung, string destGedung, i
         }
         temp->nextEdge = E;
     }
+
+    cout << "Jalan baru bernama " << namaJalan << " ditambahkan dari " << namaGedung
+         << " ke " << destGedung << " dengan jarak " << weight << " meter dan kanopi: "
+         << (kanopi ? "Ya" : "Tidak") << "." << endl;
 }
+
 
 void removeGedung(graph &G, string idVertex) {
     adrVertex prevVertex = nullptr;
@@ -350,3 +353,94 @@ adrVertex searchVertex(graph &G, string namaGedung) {
     return nullptr;
 }
 
+
+void jalurAntiHujan(graph G, string namaGedung, string tujuanGedung) {
+    const int MAX_VERTEX = 100;
+    int jarak[MAX_VERTEX];
+    bool visited[MAX_VERTEX];
+    adrVertex vertexArray[MAX_VERTEX];
+    int idxAwal = -1, idxAkhir = -1;
+    string path[MAX_VERTEX]; // untuk menyimpan jalur
+
+    // Inisialisasi variabel
+    int jumlahVertex = 0;
+    adrVertex current = firstVertex(G);
+
+    // Build vertex array and initialize
+    while (current != NULL) {
+        vertexArray[jumlahVertex] = current;
+        jarak[jumlahVertex] = INT_MAX;
+        visited[jumlahVertex] = false;
+        path[jumlahVertex] = "";
+
+        if (current->namaGedung == namaGedung) idxAwal = jumlahVertex;
+        if (current->namaGedung == tujuanGedung) idxAkhir = jumlahVertex;
+        jumlahVertex++;
+        current = nextVertex(current);
+    }
+
+    // Check keberadaan vertex awal dan akhir
+    if (idxAwal == -1 || idxAkhir == -1) {
+        cout << "Error: Gedung awal atau tujuan tidak ditemukan." << endl;
+        return;
+    }
+
+    jarak[idxAwal] = 0;
+    path[idxAwal] = vertexArray[idxAwal]->namaGedung;
+
+    // Modified Dijkstra algorithm
+    for (int i = 0; i < jumlahVertex; ++i) {
+        int minJarak = INT_MAX;
+        int idxMin = -1;
+
+        // Cari vertex dengan jarak minimum yang belum dikunjungi
+        for (int j = 0; j < jumlahVertex; ++j) {
+            if (!visited[j] && jarak[j] < minJarak) {
+                minJarak = jarak[j];
+                idxMin = j;
+            }
+        }
+
+        if (idxMin == -1) break;
+        visited[idxMin] = true;
+
+        adrEdge edge = firstEdge(vertexArray[idxMin]);
+        while (edge != NULL) {
+            // Skip edges without canopy
+            if (!edge->kanopi) {
+                edge = nextEdge(edge);
+                continue;
+            }
+
+            int idxTetangga = -1;
+            // Find neighbor index
+            for (int k = 0; k < jumlahVertex; ++k) {
+                if (vertexArray[k]->namaGedung == edge->destGedung) {
+                    idxTetangga = k;
+                    break;
+                }
+            }
+
+            if (idxTetangga != -1 && !visited[idxTetangga]) {
+                int jarakBaru = jarak[idxMin] + edge->weight;
+                if (jarakBaru < jarak[idxTetangga]) {
+                    jarak[idxTetangga] = jarakBaru;
+                    path[idxTetangga] = path[idxMin] + " -> " + edge->namaJalan +
+                                      " -> " + vertexArray[idxTetangga]->namaGedung;
+                }
+            }
+            edge = nextEdge(edge);
+        }
+    }
+
+    // Output hasil
+    if (jarak[idxAkhir] == INT_MAX) {
+        cout << "Tidak ada jalur anti hujan dari " << namaGedung
+             << " ke " << tujuanGedung << "." << endl;
+    } else {
+        cout << "Jalur anti hujan terpendek dari " << namaGedung
+             << " ke " << tujuanGedung << " adalah:" << endl;
+        cout << path[idxAkhir] << endl;
+        cout << "Dengan total jarak: " << jarak[idxAkhir] << endl;
+    }
+}

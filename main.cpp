@@ -5,7 +5,6 @@ int main() {
     graph G;
     initGraph(G);
 
-    // Menambahkan gedung (vertex)
     addVertex(G, "TULT");
     addVertex(G, "Sport-Center");
     addVertex(G, "GKU");
@@ -13,15 +12,16 @@ int main() {
     addVertex(G, "CaCuk");
     addVertex(G, "Lapangan-Tenis");
 
-    // Menambahkan jalan (edge) dengan label dan jarak acak
-    addEdge(G,"TelRoad1", "TULT", "Sport-Center", 100); // A
-    addEdge(G, "TelRoad2", "TULT", "GKU", 200);          // B
-    addEdge(G, "TelRoad3","Sport-Center", "GKU", 300);         // C
-    addEdge(G, "TelRoad4","Sport-Center", "CaCuk", 400);     // D
-    addEdge(G, "TelRoad5","GKU", "TUCH", 500);          // E
-    addEdge(G, "TelRoad6","GKU", "CaCuk", 600);              // F
-    addEdge(G, "TelRoad7","CaCuk", "Lapangan-Tenis", 700);   // G
-    addEdge(G, "TelRoad8","Lapangan-Tenis", "TUCH", 800); // H
+
+    addEdge(G,"TelRoad1", "TULT", "Sport-Center", 100, true);
+    addEdge(G, "TelRoad2", "TULT", "TUCH", 200, false);
+    addEdge(G, "TelRoad3","Sport-Center", "GKU", 150, true);
+    addEdge(G, "TelRoad4","Sport-Center", "TUCH", 250, false);
+    addEdge(G, "TelRoad5","GKU", "TUCH", 180, false);
+    addEdge(G, "TelRoad6","GKU", "CaCuk", 100, true);
+    addEdge(G, "TelRoad7","CaCuk", "Lapangan-Tenis", 150, true);
+    addEdge(G, "TelRoad8","CaCuk", "TUCH", 250, true);
+    addEdge(G, "TelRoad9","Lapangan-Tenis", "GKU", 300, true);
 
 
     menu(G);
