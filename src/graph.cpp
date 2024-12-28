@@ -14,9 +14,10 @@ void menu(graph &G) {
     string namaGedung, tujuanGedung, namaJalan;
     int jarak;
     bool antiHujan;
+    string kanopiInput;
 
     do {
-        cout << "\nMENU:\n";
+        cout << "\n=================== MENU ===================\n";
         cout << "1. Lihat gedung yang ada\n";
         cout << "2. Lihat jalan yang ada\n";
         cout << "3. Lihat gedung beserta jalan yang dimiliki\n";
@@ -27,8 +28,17 @@ void menu(graph &G) {
         cout << "8. Hapus Jalan antar gedung\n";
         cout << "9. Hapus gedung\n";
         cout << "0. Quit menu\n";
-        cout << "Masukkan pilihan: ";
-        cin >> pilihan;
+        cout << "============================================";
+        cout << "\nMasukkan pilihan: ";
+
+        if (!(cin >> pilihan)) {
+            cin.clear();
+            cin.ignore(10000, '\n');
+            cout << "Input tidak valid. Silakan coba lagi.\n";
+            continue;
+        }
+
+        cin.ignore();
 
         switch (pilihan) {
             case 1:
@@ -42,54 +52,75 @@ void menu(graph &G) {
                 break;
             case 4:
                 cout << "Masukkan nama gedung: ";
-                cin >> namaGedung;
+                getline(cin, namaGedung);
                 addVertex(G, namaGedung);
                 break;
             case 5:
                 cout << "Masukkan nama jalan: ";
-                cin >> namaJalan;
+                getline(cin, namaJalan);
                 cout << "Masukkan nama gedung asal: ";
-                cin >> namaGedung;
+                getline(cin, namaGedung);
                 cout << "Masukkan nama gedung tujuan: ";
-                cin >> tujuanGedung;
-                cout << "Masukkan jarak antar gedung: ";
-                cin >> jarak;
-                cout << "Apakah terdapat kanopi (true/false)? ";
-                cin >> antiHujan;
+                getline(cin, tujuanGedung);
+                cout << "Masukkan jarak antar gedung (meter): ";
+                if (!(cin >> jarak)) {
+                    cin.clear();
+                    cin.ignore(10000, '\n');
+                    cout << "Input jarak tidak valid.\n";
+                    break;
+                }
+                cin.ignore();
+
+                do {
+                    cout << "Apakah terdapat kanopi (ya/tidak)? ";
+                    getline(cin, kanopiInput);
+                    if (kanopiInput == "ya") {
+                        antiHujan = true;
+                        break;
+                    } else if (kanopiInput == "tidak") {
+                        antiHujan = false;
+                        break;
+                    } else {
+                        cout << "Input tidak valid. Masukkan 'true' atau 'false'\n";
+                    }
+                } while (true);
+
                 addEdge(G, namaJalan, namaGedung, tujuanGedung, jarak, antiHujan);
-            break;
+                break;
             case 6:
                 cout << "Masukan Gedung awal: ";
-                cin >> namaGedung;
+                getline(cin, namaGedung);
                 cout << "Masukan Tujuan Gedung: ";
-                cin >> tujuanGedung;
-                shortPathSearching(G, namaGedung, tujuanGedung);
+                getline(cin, tujuanGedung);
+                jalurTerpendek(G, namaGedung, tujuanGedung);
+                break;
             case 7:
                 cout << "Masukkan gedung awal: ";
-                cin >> namaGedung;
+                getline(cin, namaGedung);
                 cout << "Masukkan gedung tujuan: ";
-                cin >> tujuanGedung;
+                getline(cin, tujuanGedung);
                 jalurAntiHujan(G, namaGedung, tujuanGedung);
+                break;
             case 8:
                 cout << "Masukkan nama jalan: ";
-                cin >> namaJalan;
+                getline(cin, namaJalan);
                 cout << "Masukkan nama gedung asal: ";
-                cin >> namaGedung;
+                getline(cin, namaGedung);
                 cout << "Masukkan nama gedung tujuan: ";
-                cin >> tujuanGedung;
+                getline(cin, tujuanGedung);
                 removeJalan(G, namaJalan, namaGedung, tujuanGedung, true);
-            break;
+                break;
             case 9:
                 cout << "Masukkan nama gedung yang ingin dihapus: ";
-                cin >> namaGedung;
+                getline(cin, namaGedung);
                 removeGedung(G, namaGedung);
-            break;
+                break;
             case 0:
                 cout << "Keluar dari menu." << endl;
-            break;
+                break;
             default:
                 cout << "Pilihan tidak valid." << endl;
-            break;
+                break;
         }
 
     } while (pilihan != 0);
@@ -149,8 +180,10 @@ void addEdge(graph &G, string namaJalan, string namaGedung, string destGedung, i
         cout << "Jarak harus bernilai positif." << endl;
         return;
     }
+
     adrVertex V = searchVertex(G, namaGedung);
     adrVertex D = searchVertex(G, destGedung);
+
     if (V == nullptr) {
         cout << "Gedung " << namaGedung << " tidak ditemukan." << endl;
         return;
@@ -161,41 +194,52 @@ void addEdge(graph &G, string namaJalan, string namaGedung, string destGedung, i
 
     adrEdge temp = firstEdge(V);
     while (temp != nullptr) {
-        if (temp->namaJalan == namaJalan && temp->destGedung == destGedung) {
+        if (temp->namaJalan == namaJalan) {
             cout << "Nama jalan sudah ada, silahkan masukkan nama jalan lain." << endl;
             return;
         }
         temp = nextEdge(temp);
     }
 
-    adrEdge E;
-    createEdge(namaJalan, destGedung, weight, kanopi, E);
+    temp = firstEdge(D);
+    while (temp != nullptr) {
+        if (temp->namaJalan == namaJalan) {
+            cout << "Nama jalan sudah ada, silahkan masukkan nama jalan lain." << endl;
+            return;
+        }
+        temp = nextEdge(temp);
+    }
+
+    adrEdge E1;
+    createEdge(namaJalan, destGedung, weight, kanopi, E1);
+
     if (firstEdge(V) == nullptr) {
-        firstEdge(V) = E;
+        firstEdge(V) = E1;
     } else {
         temp = firstEdge(V);
         while (nextEdge(temp) != nullptr) {
             temp = nextEdge(temp);
         }
-        nextEdge(temp) = E;
+        nextEdge(temp) = E1;
     }
 
-    createEdge(namaJalan, namaGedung, weight, kanopi, E);
+    adrEdge E2;
+    createEdge(namaJalan, namaGedung, weight, kanopi, E2);
+
     if (firstEdge(D) == nullptr) {
-        firstEdge(D) = E;
+        firstEdge(D) = E2;
     } else {
         temp = firstEdge(D);
         while (nextEdge(temp) != nullptr) {
             temp = nextEdge(temp);
         }
-        nextEdge(temp) = E;
+        nextEdge(temp) = E2;
     }
 
     cout << "Jalan baru bernama " << namaJalan << " ditambahkan dari " << namaGedung
-         << " ke " << destGedung << " dengan jarak " << weight << " meter dan kanopi: "
-         << (kanopi ? "Ya" : "Tidak") << "." << endl;
+         << " ke " << destGedung << " dengan jarak " << weight << " meter dan "
+         << (kanopi ? "berkanopi." : "tidak berkanopi.") << endl;
 }
-
 
 void removeGedung(graph &G, string idVertex) {
     adrVertex prevVertex = nullptr;
@@ -211,7 +255,6 @@ void removeGedung(graph &G, string idVertex) {
         return;
     }
 
-    // Hapus semua edge yang terhubung ke vertex ini
     adrVertex temp = G.firstVertex;
     while (temp != nullptr) {
         adrEdge edge = firstEdge(temp);
@@ -222,14 +265,12 @@ void removeGedung(graph &G, string idVertex) {
         temp = temp->nextVertex;
     }
 
-    // Hapus vertex dari graf
     if (prevVertex == nullptr) {
         firstVertex(G) = nextVertex(currentVertex);
     } else {
         nextVertex(prevVertex) = nextVertex(currentVertex);
     }
 
-    // Hapus semua edge yang berasal dari vertex ini
     while (firstEdge(currentVertex) != nullptr) {
         adrEdge tempEdge = firstEdge(currentVertex);
         firstEdge(currentVertex) = nextEdge(tempEdge);
@@ -249,14 +290,12 @@ void removeJalan(graph &G, string namaJalan, string namaGedung, string destGedun
         return;
     }
 
-    // Cari vertex untuk gedung tujuan
     adrVertex endVertex = searchVertex(G, destGedung);
     if (endVertex == nullptr) {
         cout << "Gedung " << destGedung << " tidak ditemukan." << endl;
         return;
     }
 
-    // Hapus jalan dari gedung asal ke gedung tujuan berdasarkan nama jalan
     adrEdge prevEdge = nullptr;
     adrEdge currentEdge = firstEdge(startVertex);
 
@@ -278,7 +317,6 @@ void removeJalan(graph &G, string namaJalan, string namaGedung, string destGedun
         if (stringOutput) cout << "Jalan " << namaJalan << " dari " << namaGedung << " ke " << destGedung << " tidak ditemukan." << endl;
     }
 
-    // Hapus jalan dari gedung tujuan ke gedung asal berdasarkan nama jalan (jika ada)
     prevEdge = nullptr;
     currentEdge = firstEdge(endVertex);
 
@@ -304,6 +342,9 @@ void removeJalan(graph &G, string namaJalan, string namaGedung, string destGedun
 
 void showGraph(graph G) {
     adrVertex v = firstVertex(G);
+    if (v == nullptr) {
+        cout << "\n**Tidak ada data dalam graph**" << endl;
+    }
     while (v != nullptr) {
         cout << "Gedung: " << v->namaGedung << endl;
         adrEdge e = firstEdge(v);
@@ -319,20 +360,32 @@ void showGraph(graph G) {
 }
 void showEdge(graph G) {
     adrVertex temp = firstVertex(G);
+    bool hasJalan = false;
+    adrVertex checkTemp = firstVertex(G);
+    while (checkTemp != nullptr) {
+        if (firstEdge(checkTemp) != nullptr) {
+            hasJalan = true;
+            break;
+        }
+        checkTemp = nextVertex(checkTemp);
+    }
+    if (temp == nullptr || !hasJalan) {
+        cout << "\n**Tidak ada data dalam terkait jalan graph**\n";
+        return;
+    }
+
     cout << "Daftar Jalan:\n";
-    set<string> jalanSet;  // Set untuk menyimpan nama jalan agar tidak ada yang duplikat
+    set<string> jalanSet;
 
     while (temp != nullptr) {
         adrEdge edge = firstEdge(temp);
         while (edge != nullptr) {
-            // Tambahkan nama jalan ke set, sehingga hanya jalan yang unik yang ditampilkan
             jalanSet.insert(edge->namaJalan);
             edge = nextEdge(edge);
         }
         temp = nextVertex(temp);
     }
 
-    // Tampilkan nama jalan yang unik
     for (const string& jalan : jalanSet) {
         cout << "- jalan " << jalan << endl;
     }
@@ -341,7 +394,11 @@ void showEdge(graph G) {
 
 void showVertex(graph G) {
     adrVertex temp = firstVertex(G);
-    cout << "Daftar Gedung:\n";
+    if (temp == nullptr){
+        cout << "\n**Tidak ada data terkait gedung dalam graph**\n";
+    }else {
+        cout << "Daftar Gedung:\n";
+    }
     while (temp != nullptr) {
         cout << "- " << temp->namaGedung << endl;
         temp = nextVertex(temp);
@@ -366,13 +423,11 @@ void jalurAntiHujan(graph G, string namaGedung, string tujuanGedung) {
     bool visited[MAX_VERTEX];
     adrVertex vertexArray[MAX_VERTEX];
     int idxAwal = -1, idxAkhir = -1;
-    string path[MAX_VERTEX]; // untuk menyimpan jalur
+    string path[MAX_VERTEX];
 
-    // Inisialisasi variabel
     int jumlahVertex = 0;
     adrVertex current = firstVertex(G);
 
-    // Build vertex array and initialize
     while (current != NULL) {
         vertexArray[jumlahVertex] = current;
         jarak[jumlahVertex] = INT_MAX;
@@ -385,7 +440,6 @@ void jalurAntiHujan(graph G, string namaGedung, string tujuanGedung) {
         current = nextVertex(current);
     }
 
-    // Check keberadaan vertex awal dan akhir
     if (idxAwal == -1 || idxAkhir == -1) {
         cout << "Error: Gedung awal atau tujuan tidak ditemukan." << endl;
         return;
@@ -394,12 +448,10 @@ void jalurAntiHujan(graph G, string namaGedung, string tujuanGedung) {
     jarak[idxAwal] = 0;
     path[idxAwal] = vertexArray[idxAwal]->namaGedung;
 
-    // Modified Dijkstra algorithm
     for (int i = 0; i < jumlahVertex; ++i) {
         int minJarak = INT_MAX;
         int idxMin = -1;
 
-        // Cari vertex dengan jarak minimum yang belum dikunjungi
         for (int j = 0; j < jumlahVertex; ++j) {
             if (!visited[j] && jarak[j] < minJarak) {
                 minJarak = jarak[j];
@@ -412,14 +464,12 @@ void jalurAntiHujan(graph G, string namaGedung, string tujuanGedung) {
 
         adrEdge edge = firstEdge(vertexArray[idxMin]);
         while (edge != NULL) {
-            // Skip edges without canopy
             if (!edge->kanopi) {
                 edge = nextEdge(edge);
                 continue;
             }
 
             int idxTetangga = -1;
-            // Find neighbor index
             for (int k = 0; k < jumlahVertex; ++k) {
                 if (vertexArray[k]->namaGedung == edge->destGedung) {
                     idxTetangga = k;
@@ -451,31 +501,37 @@ void jalurAntiHujan(graph G, string namaGedung, string tujuanGedung) {
     }
 }
 
-int shortPathSearching(graph &G, string namaGedung, string tujuanGedung) {
+void jalurTerpendek(graph G, string namaGedung, string tujuanGedung) {
     const int MAX_VERTEX = 100;
     int jarak[MAX_VERTEX];
     bool visited[MAX_VERTEX];
     adrVertex vertexArray[MAX_VERTEX];
     int idxAwal = -1, idxAkhir = -1;
+    string path[MAX_VERTEX];
 
     int jumlahVertex = 0;
     adrVertex current = firstVertex(G);
+
     while (current != NULL) {
         vertexArray[jumlahVertex] = current;
         jarak[jumlahVertex] = INT_MAX;
         visited[jumlahVertex] = false;
+        path[jumlahVertex] = "";
+
         if (current->namaGedung == namaGedung) idxAwal = jumlahVertex;
         if (current->namaGedung == tujuanGedung) idxAkhir = jumlahVertex;
         jumlahVertex++;
-        current = current->nextVertex;
+        current = nextVertex(current);
     }
 
     if (idxAwal == -1 || idxAkhir == -1) {
-        cout << "Error: Vertex awal atau tujuan tidak ditemukan." << endl;
-        return -1;
+        cout << "Gedung awal atau tujuan tidak ditemukan." << endl;
+        return;
     }
 
     jarak[idxAwal] = 0;
+    path[idxAwal] = vertexArray[idxAwal]->namaGedung;
+
     for (int i = 0; i < jumlahVertex; ++i) {
         int minJarak = INT_MAX;
         int idxMin = -1;
@@ -504,6 +560,8 @@ int shortPathSearching(graph &G, string namaGedung, string tujuanGedung) {
                 int jarakBaru = jarak[idxMin] + edge->weight;
                 if (jarakBaru < jarak[idxTetangga]) {
                     jarak[idxTetangga] = jarakBaru;
+                    path[idxTetangga] = path[idxMin] + " -> " + edge->namaJalan +
+                                      " -> " + vertexArray[idxTetangga]->namaGedung;
                 }
             }
             edge = nextEdge(edge);
@@ -511,10 +569,12 @@ int shortPathSearching(graph &G, string namaGedung, string tujuanGedung) {
     }
 
     if (jarak[idxAkhir] == INT_MAX) {
-        cout << "Tidak ada jalur dari " << namaGedung << " ke " << tujuanGedung << "." << endl;
-        return -1;
+        cout << "Tidak ada jalur dari " << namaGedung
+             << " ke " << tujuanGedung << "." << endl;
     } else {
-        cout << "Jarak terpendek dari " << namaGedung << " ke " << tujuanGedung << " adalah " << jarak[idxAkhir] << "." << endl;
-        return jarak[idxAkhir];
+        cout << "Jalur terpendek dari " << namaGedung
+             << " ke " << tujuanGedung << " adalah:" << endl;
+        cout << path[idxAkhir] << endl;
+        cout << "Dengan total jarak: " << jarak[idxAkhir] << " meter" << endl;
     }
 }
