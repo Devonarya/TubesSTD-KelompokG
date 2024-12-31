@@ -8,6 +8,7 @@
 #define weight(e) e->weight
 #define nextEdge(e) e->nextEdge
 #include <set>
+#include <climits>
 
 void menu(graph &G) {
     int pilihan;
@@ -162,7 +163,10 @@ void createEdge(string namaJalan,string destGedung, int weight, bool kanopi, adr
 void addVertex(graph &G, string namaGedung) {
     adrVertex V;
     createVertex(namaGedung, V);
-
+    if (searchVertex(G,namaGedung) != nullptr){
+        cout << "Gedung sudah ada";
+        return;
+    }
     if (firstVertex(G) == nullptr) {
         firstVertex(G) = V;
     } else {
