@@ -31,11 +31,11 @@ void menu(graph &G) {
         cout << "============================================";
         cout << "\nMasukkan pilihan: ";
 
-        if (!(cin >> pilihan)) {
+        while (!(cin >> pilihan)) {
             cin.clear();
             cin.ignore(10000, '\n');
             cout << "Input tidak valid. Silakan coba lagi.\n";
-            continue;
+            cout << "\nMasukkan pilihan: ";
         }
 
         cin.ignore();
